@@ -7,29 +7,31 @@ import (
 	"strings"
 )
 
-// BacktracePath trace path from parents directories.
+// BacktracePathFromCurrentDir trace path in parents dir from current dir.
 // Usage: trace some path like go.mod, .git, .gitignore...
-func BacktracePath(path string) (string, os.FileInfo, error) {
-	path = strings.Trim(path, "/")
-
-	return backtracePath(".", path)
+func BacktracePathFromCurrentDir(path string) (string, os.FileInfo, error) {
+	return BacktracePath(".", path)
 }
 
-func backtracePath(dir string, path string) (string, os.FileInfo, error) {
-	dir = TryGetAbsPath(dir)
+// BacktracePath trace path in parents dir from given @from.
+// Usage: trace some path like go.mod, .git, .gitignore...
+func BacktracePath(from string, path string) (string, os.FileInfo, error) {
+	path = strings.Trim(path, "/")
+
+	from = TryGetAbsPath(from)
 	flagRoot := false
-	if TryGetAbsPath(dir) == "/" {
+	if TryGetAbsPath(from) == "/" {
 		flagRoot = true
 	}
 
-	items, e := ioutil.ReadDir(dir)
+	items, e := ioutil.ReadDir(from)
 	if e != nil {
 		return "", nil, e
 	}
 
 	for _, item := range items {
 		if item.Name() == path {
-			return TryGetAbsPath(filepath.Join(dir, item.Name())), item, nil
+			return TryGetAbsPath(filepath.Join(from, item.Name())), item, nil
 		}
 	}
 
@@ -37,7 +39,7 @@ func backtracePath(dir string, path string) (string, os.FileInfo, error) {
 		return "", nil, os.ErrNotExist
 	}
 
-	return backtracePath(filepath.Join(dir, ".."), path)
+	return BacktracePath(filepath.Join(from, ".."), path)
 }
 
 // TryGetAbsPath try to get absolute path of path but ignore the error.

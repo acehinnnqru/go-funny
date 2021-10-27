@@ -17,22 +17,35 @@ func TestBackTracePath(t *testing.T) {
 		name    string
 		args    args
 		wantPath    string
-		wantIsDir  bool
+		wantFileInfo  func(os.FileInfo) bool
 		err error
 	}{
 		{
 			".git",
 			args{path: ".git"},
 			filepath.Join(wd, ".git"),
-			true,
+			func(info os.FileInfo) bool {
+				return info.IsDir()
+			},
 			nil,
 		},
 		{
 			"go.mod",
 			args{path: "go.mod"},
 			filepath.Join(wd, "go.mod"),
-			false,
+			func(info os.FileInfo) bool {
+				return !info.IsDir()
+			},
 			nil,
+		},
+		{
+			"..git",
+			args{path: "..git"},
+			"",
+			func(info os.FileInfo) bool {
+				return info == nil
+			},
+			os.ErrNotExist,
 		},
 	}
 	for _, tt := range tests {
@@ -41,7 +54,7 @@ func TestBackTracePath(t *testing.T) {
 
 			require.True(t, err == tt.err)
 			require.Equal(t, tt.wantPath, got)
-			require.Equal(t, tt.wantIsDir, got1.IsDir())
+			require.True(t, tt.wantFileInfo(got1))
 		})
 	}
 }

@@ -16,6 +16,7 @@ func BacktracePath(path string) (string, os.FileInfo, error) {
 }
 
 func backtracePath(dir string, path string) (string, os.FileInfo, error) {
+	dir = TryGetAbsPath(dir)
 	flagRoot := false
 	if TryGetAbsPath(dir) == "/" {
 		flagRoot = true
@@ -33,10 +34,10 @@ func backtracePath(dir string, path string) (string, os.FileInfo, error) {
 	}
 
 	if flagRoot {
-		return "", nil, e
+		return "", nil, os.ErrNotExist
 	}
 
-	return backtracePath(filepath.Dir(dir), path)
+	return backtracePath(filepath.Join(dir, ".."), path)
 }
 
 // TryGetAbsPath try to get absolute path of path but ignore the error.

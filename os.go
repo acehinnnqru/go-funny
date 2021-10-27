@@ -7,15 +7,15 @@ import (
 	"strings"
 )
 
-// BackTracePath trace path from parents directories.
+// BacktracePath trace path from parents directories.
 // Usage: trace some path like go.mod, .git, .gitignore...
-func BackTracePath(path string) (string, os.FileInfo, error) {
+func BacktracePath(path string) (string, os.FileInfo, error) {
 	path = strings.Trim(path, "/")
 
-	return backtraceDir(".", path)
+	return backtracePath(".", path)
 }
 
-func backtraceDir(dir string, path string) (string, os.FileInfo, error) {
+func backtracePath(dir string, path string) (string, os.FileInfo, error) {
 	flagRoot := false
 	if TryGetAbsPath(dir) == "/" {
 		flagRoot = true
@@ -36,7 +36,7 @@ func backtraceDir(dir string, path string) (string, os.FileInfo, error) {
 		return "", nil, e
 	}
 
-	return backtraceDir(filepath.Dir(dir), path)
+	return backtracePath(filepath.Dir(dir), path)
 }
 
 // TryGetAbsPath try to get absolute path of path but ignore the error.
